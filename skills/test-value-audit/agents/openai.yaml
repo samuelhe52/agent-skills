@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test Value Audit"
+  short_description: "Prune low-value tests and find meaningful gaps"
+  default_prompt: "Use $test-value-audit to audit these tests for distinct behavioral value, unnecessary mocking, redundancy, and missing business-critical coverage."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Remote GPU Experiments"
+  short_description: "Operate workloads on remote GPU hosts"
+  default_prompt: "Use $remote-gpu-experiments to inspect the target host, choose suitable remote execution tools, run the requested GPU workload, and preserve observable results."
