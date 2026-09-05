@@ -9,7 +9,7 @@ Evaluate whether each test protects meaningful runtime behavior that another tes
 
 ## Audit workflow
 
-1. Infer the scope and any excluded test families from the request; ask only when genuinely ambiguous. Inspect repository instructions, the current diff, and authoritative test commands. When a test command is available, run the suite and use runtimes, failures, flakes, and skip counts as evidence; do not modify anything to make it pass. Preserve unrelated work.
+1. Infer the scope and any excluded test families from the request; ask only when genuinely ambiguous. Inspect repository instructions, the current diff, and authoritative test commands. Run relevant tests when execution would materially inform the audit and the environment permits it; use runtimes, failures, flakes, and skip counts as evidence. Otherwise, continue source analysis and state the evidence limitation. Do not modify anything to make tests pass. Preserve unrelated work.
 2. Read each test with the production code, call sites, and relevant requirements. For a large suite, work subsystem by subsystem.
 3. Map the behavior before judging the tests: business rules, state transitions, boundaries, failure modes, persistence, concurrency, security, external schemas, and user-visible outcomes.
 4. Ask of each test:
