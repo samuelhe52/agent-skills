@@ -1,0 +1,4 @@
+interface:
+  display_name: "Experiment Infrastructure Design"
+  short_description: "Design reliable, observable experiment infrastructure"
+  default_prompt: "Use $experiment-infra-design to review this experiment component, select a proportional rigor level, and validate its failure handling and evidence retention."

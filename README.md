@@ -16,6 +16,7 @@ npx skills add samuelhe52/agent-skills --skill remote-gpu-experiments
 
 - `test-value-audit`: Find low-value tests and gaps in meaningful coverage.
 - `remote-gpu-experiments`: Run and monitor ML workloads on remote GPU hosts.
+- `experiment-infra-design`: Design and review experiment components with proportional failure handling, observability, and validation.
 
 ## License
 
