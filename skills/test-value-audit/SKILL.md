@@ -1,76 +1,44 @@
 ---
 name: test-value-audit
-description: Audit tests for distinct defect-detection value against their maintenance cost, reading production code and tests together. Use when reviewing a test file, diff, subsystem, or full suite for redundant, implementation-detail, overly defensive, over-mocked, or otherwise low-value tests; when deciding what to keep, merge, remove, rewrite, or add; or when hunting for missing coverage of business rules, boundaries, and failure cases. Never edit production source code. Change tests only when explicitly requested.
+description: Audit tests for distinct defect-detection value relative to their maintenance cost, reading tests alongside production code. Identify redundant or ineffective tests and meaningful coverage gaps. Never edit production code; change tests only when explicitly requested.
 ---
 
 # Test Value Audit
 
-Evaluate whether each test protects meaningful runtime behavior that another test does not already protect. Prefer the smallest coherent suite that catches plausible regressions in business rules, boundaries, failures, and external contracts.
+Assess which plausible regressions a test detects and whether that protection justifies its maintenance cost. Read tests alongside the behavior they exercise and the requirements they are meant to protect.
 
-## Audit workflow
+## Assess the protection
 
-1. Infer the scope and any excluded test families from the request; ask only when genuinely ambiguous. Inspect repository instructions, the current diff, and authoritative test commands. Run relevant tests when execution would materially inform the audit and the environment permits it; use runtimes, failures, flakes, and skip counts as evidence. Otherwise, continue source analysis and state the evidence limitation. Do not modify anything to make tests pass. Preserve unrelated work.
-2. Read each test with the production code, call sites, and relevant requirements. For a large suite, work subsystem by subsystem.
-3. Map the behavior before judging the tests: business rules, state transitions, boundaries, failure modes, persistence, concurrency, security, external schemas, and user-visible outcomes.
-4. Ask of each test:
-   - What invariant or observable behavior does it protect?
-   - What plausible defect would make it fail?
-   - Is its oracle independent enough to detect a defect, rather than repeat the implementation?
-   - Does another test already catch the same defect?
-   - Does its value justify its setup, mocks, runtime, brittleness, and production complexity?
-5. Recommend `keep`, `merge`, `remove`, `rewrite`, or `add`. Use `merge` when several tests protect one invariant and should collapse into the strongest of them; use `rewrite` when the behavior deserves protection but the current oracle, fixture, or mocking is too weak to catch a defect.
-6. Never edit production source code. Change test files only when explicitly requested; otherwise, report findings with evidence and rationale.
+Identify the contract, the plausible defect, and how the test would expose that defect. Useful protection can cover ordinary business behavior, boundary conditions, failure handling, or interactions between components. Choose the relevant dimensions for the code under review.
 
-## Favor valuable coverage
+Judge a test by whether a consequential defect would cause it to fail. Its expected result should express the intended contract independently enough to expose an incorrect implementation. Assertions that merely reproduce the implementation or confirm a configured mock response offer little evidence of correctness.
 
-Keep tests that protect a named contract such as:
+Check whether assertions actually run and whether the test can fail for the intended reason. A swallowed assertion or an unawaited asynchronous check can make apparent coverage ineffective.
 
-- business decisions, calculations, transformations, and state transitions;
-- boundary values and materially different input classes;
-- errors, retries, cancellation, ordering, concurrency, time, precision, or recovery;
-- persistence, migration, durability, locking, or conflict resolution;
-- external wire formats, schemas, commands, and user-visible output;
-- authorization, security, privacy, and redaction;
-- integration wiring that cannot be exercised meaningfully at a lower layer;
-- a realistic or previously observed regression.
+Assess redundancy by the defects detected, not by similar syntax or shared line coverage. Tests exercising the same code may protect different behavior. Tests with different fixtures may provide interchangeable protection.
 
-Treat internal details as eligible when changing them would break compatibility, safety, durability, performance, or another named contract. Do not remove a test merely because it touches an internal API.
+Distinguish stable behavioral requirements from replaceable implementation choices. An internal API can still embody an important contract; being internal is not itself a reason to remove its tests.
 
-## Challenge low-value coverage
+## Weigh cost and redundancy
 
-Treat these as signals for closer review, not automatic deletion:
+Treat implementation coupling, broad snapshots, and many similar cases as prompts for investigation rather than automatic removal criteria. Determine what protection would be lost before simplifying. A compact test with weak assertions can be less valuable than a longer integration test that detects a distinct failure.
 
-- tests that cannot fail: assertion-free bodies, unawaited async assertions, expectations inside callbacks that never run, assertions swallowed by error handling, or skipped and quarantined tests;
-- assertions that restate assignments, getters, direct field copying, constants, enum membership, types, schemas already enforced by tooling, or source-visible defaults;
-- checks of private helper identity, registration order, call structure, incidental database layout, or other replaceable implementation choices;
-- several permutations that traverse the same branch and use the same oracle without protecting distinct boundary behavior;
-- duplicate assertions or tests that protect the same invariant at the same effective layer;
-- assertions that only confirm a mock returned the value configured by the test;
-- broad snapshots, existence checks, or type checks that add nothing beside a stronger behavioral assertion;
-- defensive cases with no plausible failure mechanism or business consequence.
+Include setup, brittleness, runtime, mocks, and production complexity introduced for testing in the cost assessment. Isolation is useful when it preserves the behavior under examination. Question mocks that remove that behavior or conceal the failure the test is supposed to detect.
 
-Do not equate shared coverage or similar syntax with redundancy. Two tests can execute the same lines while protecting different contracts. Conversely, different fixtures can be redundant when they catch the same defect.
+Mocking an external dependency can make a test deterministic; mocking the behavior being tested can make it circular. Evaluate the boundary and the asserted outcome rather than counting mocks. Keep production seams that serve architectural purposes as well as testing, and question complexity introduced solely to support weak tests.
 
-## Audit mocking and testability cost
+## Find gaps and choose changes
 
-Mock stable boundaries such as external services, clocks, randomness, slow I/O, and nondeterministic systems when isolation is useful. Prefer exercising real business logic behind those boundaries.
+Look for missing protection as well as opportunities to simplify. Recommend adding or strengthening a test when it covers a meaningful risk that the existing suite does not detect. Choose additional investigation or test execution according to what would resolve uncertainty in the assessment.
 
-Flag mocking when it:
+Prefer extending an existing test when it can clearly express the missing contract. Use coverage, mutation testing, or failure history when they would resolve an important uncertainty; avoid making them mandatory for a straightforward review.
 
-- replaces the behavior under test or mirrors its control flow;
-- verifies self-authored call choreography instead of an outcome;
-- makes impossible states look valid;
-- hides serialization, persistence, framework, or integration behavior that carries the actual risk;
-- requires production indirection, protocols, factories, or visibility changes whose only benefit is testing trivial logic.
+Merge tests when their protection is interchangeable and can be retained more simply. Rewrite a test when its intended contract matters but its setup or assertions do not establish it. Remove one only when the lost protection is unnecessary or adequately supplied elsewhere.
 
-Judge the test and any test-driven production seam as one maintenance-cost decision. Keep a seam when it also improves ownership, substitution, isolation, or architecture; question it when it exists only to support a weak test. Report possible production-code simplifications as recommendations only; never implement them. Do not demand an integration test, a negative twin, or a new abstraction for every mocked unit test.
+## Report and scope
 
-## Find missing value
+Recommend keeping, merging, removing, rewriting, or adding tests as appropriate, with evidence and a clear account of the protection gained or lost. Prioritize consequential findings and choose a report structure suited to the scope.
 
-After pruning candidates, look for meaningful gaps the suite's volume may obscure. Add or propose a test only when it covers a distinct rule, boundary, failure, or integration risk. Prefer extending the canonical test for an invariant over creating another test file or defensive permutation.
+Cite the test and relevant production behavior, explain non-obvious recommendations, and distinguish confirmed findings from uncertainties. Report meaningful coverage gaps without enumerating every routine keep.
 
-Use mutation testing, per-test coverage, or test history only when an important redundancy decision remains ambiguous or the repository already supports them. Do not require heavyweight analysis for straightforward source-restating tests.
-
-## Report with evidence
-
-Open with a short summary of suite health and the highest-impact findings. Order findings by how much they change maintenance cost or regression risk, and do not pad the report with every trivial keep. Group findings by verdict; for each, name the test, the contract it does or does not protect, and the rationale, citing evidence such as the production code exercised, the duplicating test, runtime, or flake history. Highlight non-obvious keeps, removal or merge candidates, mocking trade-offs, and missing high-value cases. Distinguish confirmed findings from uncertain recommendations, and state any validation limits.
+Never edit production code. Change tests only when explicitly requested; report possible production simplifications as recommendations.
