@@ -12,7 +12,8 @@ Adapt the execution strategy to the actual host, repository, and user request.
 - Inspect the relevant local code and remote environment before making changes.
 - Detect the host's runtime, GPU tooling, storage layout, and job-control mechanism instead of assuming them.
 - Preserve existing local and remote data. Verify synchronization targets before using options that remove or overwrite files.
-- MANDATORY: Use a **durable execution mechanism** that makes the job outlive the SSH session. for long-running jobs and retain useful logs.
+- Validate launch-critical credentials and configuration from the path the remote worker will read after transfer. Check formatting and permissions without exposing secrets, and make a minimal authenticated request through the same integration when applicable; a source-side check cannot detect transfer corruption.
+- Use a durable execution mechanism that makes the job outlive the SSH session. for long-running jobs and retain useful logs.
 - After launching work, provide the commands needed to inspect, attach to, and stop it.
 - Avoid installing packages or rebuilding the remote environment unless necessary and within the requested scope.
 - When comparing variants, keep conditions comparable and report the results as a comparison.
