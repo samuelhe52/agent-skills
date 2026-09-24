@@ -7,6 +7,8 @@ description: Audit tests for distinct defect-detection value relative to their m
 
 Assess which plausible regressions a test detects and whether that protection justifies its maintenance cost. Read tests alongside the behavior they exercise and the requirements they are meant to protect.
 
+When proposing or writing a test, identify the observable contract, a credible regression that would make the test fail, and why existing tests would not catch it. Prefer extending an existing test when it can express the distinct risk clearly. Question a production seam introduced only to support a weak test.
+
 ## Assess the protection
 
 Identify the contract, the plausible defect, and how the test would expose that defect. Useful protection can cover ordinary business behavior, boundary conditions, failure handling, or interactions between components. Choose the relevant dimensions for the code under review.
@@ -14,6 +16,8 @@ Identify the contract, the plausible defect, and how the test would expose that 
 Judge a test by whether a consequential defect would cause it to fail. Its expected result should express the intended contract independently enough to expose an incorrect implementation. Assertions that merely reproduce the implementation or confirm a configured mock response offer little evidence of correctness.
 
 Check whether assertions actually run and whether the test can fail for the intended reason. A swallowed assertion or an unawaited asynchronous check can make apparent coverage ineffective.
+
+Inspect tests whose expected values come from the code under test, mocks that supply the asserted behavior, and negative cases that pass because of an unrelated guard. These patterns can hide a regression; determine whether the test has independent protection before changing it.
 
 Assess redundancy by the defects detected, not by similar syntax or shared line coverage. Tests exercising the same code may protect different behavior. Tests with different fixtures may provide interchangeable protection.
 
@@ -33,7 +37,9 @@ Look for missing protection as well as opportunities to simplify. Recommend addi
 
 Prefer extending an existing test when it can clearly express the missing contract. Use coverage, mutation testing, or failure history when they would resolve an important uncertainty; avoid making them mandatory for a straightforward review.
 
-Merge tests when their protection is interchangeable and can be retained more simply. Rewrite a test when its intended contract matters but its setup or assertions do not establish it. Remove one only when the lost protection is unnecessary or adequately supplied elsewhere.
+For a bug regression test, seek evidence that it fails on the faulty behavior for the intended reason and passes with the fix. If that check is impractical, state what supports the test and what remains unverified.
+
+Merge tests when their protection is interchangeable and can be retained more simply. Rewrite a test when its intended contract matters but its setup or assertions do not establish it. Before recommending removal, identify the failure the test can detect, any remaining test that detects it, and the protection that would be lost. Check relevant history when the test's purpose is unclear. Remove one only when the lost protection is unnecessary or adequately supplied elsewhere.
 
 ## Report and scope
 
