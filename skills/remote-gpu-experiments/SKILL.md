@@ -17,6 +17,10 @@ Adapt the execution strategy to the actual host, repository, and user request.
 - After launching work, provide the commands needed to inspect, attach to, and stop it.
 - Avoid installing packages or rebuilding the remote environment unless necessary and within the requested scope.
 - When comparing variants, keep conditions comparable and report the results as a comparison.
+- Detect the local shell and toolchain as well as the remote one. A macOS controller has zsh and BSD tools, so GNU-only flags such as `find -printf` fail locally.
+- Run anything longer than one line on a remote host or container as a script file: write it locally, copy it over, and run it with `ssh host bash <file>` or `docker exec <container> bash <file>`. Do not nest quoting across the local shell, `ssh`, `docker exec`, and `bash -c` or inline heredocs.
+- Guard Python multiprocessing entry points, such as inference engines that spawn workers, with `if __name__ == "__main__":` in probe scripts.
+- Check and report the exit status of every verification step. A failed or skipped check blocks the claim it supports; do not infer success from partial output.
 
 ## Tool Selection
 
